@@ -1,0 +1,64 @@
+---
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-ext-400.css';
+import '@fontsource/barlow/latin-700.css';
+import '@fontsource/barlow/latin-ext-700.css';
+import '@fontsource/barlow-condensed/latin-700.css';
+import '@fontsource/barlow-condensed/latin-ext-700.css';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Page not found · Ahmet Bera Çelik</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <main class="nf g">
+      <div class="inner">
+        <p class="lbl dim">404</p>
+        <h1>Page not found</h1>
+        <p class="nf-text">The page you are looking for does not exist or has moved.</p>
+        <p class="nf-text" lang="tr">Aradığınız sayfa yok ya da taşınmış.</p>
+        <div class="nf-btns">
+          <a class="btn" href="/">Home</a>
+          <a class="btn quiet" href="/tr/" lang="tr" hreflang="tr">Ana sayfa</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  .nf {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-block: 96px;
+  }
+  .nf .inner {
+    width: 100%;
+  }
+  h1 {
+    font: 700 clamp(44px, 7vw, 96px) / 0.95 var(--cond);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    margin: 12px 0 24px;
+    color: var(--star);
+  }
+  .nf-text {
+    margin: 0 0 6px;
+    font-size: clamp(17px, 1.3vw, 19px);
+    color: var(--soft);
+  }
+  .nf-btns {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+  }
+</style>

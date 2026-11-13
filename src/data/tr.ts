@@ -16,7 +16,7 @@ export const trData: SiteData = {
       contact: { label: 'İletişim', sectionId: 'iletisim' },
     },
     langSwitchLabel: 'EN',
-    langSwitchAria: 'Switch to English',
+    langSwitchAria: 'EN · Switch to English',
   },
   hero: {
     sectionAriaLabel: 'Tanıtım',
