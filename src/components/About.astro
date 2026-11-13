@@ -1,0 +1,149 @@
+---
+import { Image } from 'astro:assets';
+import type { SiteData } from '../data/types';
+import { portraitImage } from '../utils/media';
+
+interface Props {
+  about: SiteData['about'];
+}
+
+const { about } = Astro.props;
+---
+
+<section class="about g" id={about.id} aria-label={about.ariaLabel}>
+  <div class="inner about-grid">
+    <figure class="portrait">
+      <Image
+        src={portraitImage}
+        alt={about.portraitAlt}
+        widths={[380, 480, 640]}
+        sizes="(max-width: 880px) 100vw, 460px"
+        loading="lazy"
+      />
+    </figure>
+    <div class="roles">
+      <ul class="role-list">
+        {
+          about.roles.map((role) => (
+            <li>
+              <span class="rt">{role.title}</span>
+              <span class="rs">
+                {role.detail}
+                <span class="yr">{role.year}</span>
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="edu lbl dim tabular">{about.education}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    padding-block: clamp(76px, 8.5vw, 120px);
+    border-top: 1px solid var(--gunmetal);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--grid-gap);
+    align-items: stretch;
+  }
+
+  .portrait {
+    align-self: start;
+    grid-column: span 4;
+    margin: 0;
+    border: 1px solid var(--gunmetal);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--void);
+  }
+
+  .portrait :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .roles {
+    grid-column: 5 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  }
+
+  .role-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--gunmetal);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .role-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-block: 20px;
+    border-bottom: 1px solid var(--gunmetal);
+    flex: 1;
+    justify-content: center;
+  }
+
+  .rt {
+    font: 700 clamp(28px, 3.3vw, 46px) / 1.05 var(--cond);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--star);
+  }
+
+  .rs {
+    font: 500 clamp(16px, 1.2vw, 17.5px) / 1.5 var(--sans);
+    letter-spacing: 0.02em;
+    color: var(--soft);
+  }
+
+  .rs .yr {
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+    margin-left: 4px;
+  }
+
+  .about-text {
+    margin: 4px 0 0;
+    font-size: clamp(17px, 1.3vw, 19px);
+    color: var(--soft);
+    max-width: 66ch;
+    line-height: 1.65;
+  }
+
+  .edu {
+    margin: 0;
+    padding-top: 4px;
+  }
+
+  @media (max-width: 960px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .portrait {
+      grid-column: auto;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .roles {
+      grid-column: auto;
+    }
+  }
+</style>

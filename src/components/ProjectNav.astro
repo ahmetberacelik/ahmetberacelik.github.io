@@ -1,0 +1,87 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { SiteData } from '../data/types';
+import { getProjectPath, type Locale } from '../utils/i18n';
+
+interface Props {
+  lang: Locale;
+  siteData: SiteData;
+  homePath: string;
+  prevProject?: CollectionEntry<'projects'> | null;
+  nextProject?: CollectionEntry<'projects'> | null;
+}
+
+const { lang, siteData, homePath, prevProject, nextProject } = Astro.props;
+const prevPath = prevProject ? getProjectPath(lang, prevProject.data.projectSlug) : null;
+const nextPath = nextProject ? getProjectPath(lang, nextProject.data.projectSlug) : null;
+---
+
+<nav class="project-nav" aria-label={lang === 'tr' ? 'Proje gezintisi' : 'Project navigation'}>
+  <div class="pnav-back">
+    <a href={`${homePath}#${siteData.projectsSection.id}`} class="btn quiet">
+      ← {siteData.projectsSection.backToProjectsLabel}
+    </a>
+  </div>
+  <div class="pnav-neighbors">
+    {prevProject && (
+      <a href={prevPath} class="pnav-link pnav-prev">
+        <span class="lbl dim">← {lang === 'tr' ? 'Önceki proje' : 'Previous project'}</span>
+        <span class="pnav-title">{prevProject.data.title}</span>
+      </a>
+    )}
+    {nextProject && (
+      <a href={nextPath} class="pnav-link pnav-next">
+        <span class="lbl dim">{lang === 'tr' ? 'Sonraki proje' : 'Next project'} →</span>
+        <span class="pnav-title">{nextProject.data.title}</span>
+      </a>
+    )}
+  </div>
+</nav>
+
+<style>
+  .project-nav {
+    margin-top: clamp(64px, 7vw, 96px);
+    border-top: 1px solid var(--gunmetal);
+    padding-top: clamp(32px, 4vw, 48px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .pnav-neighbors {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pnav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 18px;
+    border: 1px solid var(--gunmetal);
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--star);
+    min-height: 52px;
+    min-width: 140px;
+  }
+  .pnav-link:hover {
+    border-color: var(--star);
+    background: rgba(240, 240, 250, 0.04);
+  }
+  .pnav-title {
+    font: 700 clamp(16px, 1.2vw, 18px)/1.2 var(--cond);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  @media (max-width: 880px) {
+    .project-nav { flex-direction: column; align-items: stretch; }
+    .pnav-neighbors { justify-content: space-between; }
+    .pnav-link { flex: 1; }
+  }
+  @media (max-width: 520px) {
+    .pnav-neighbors { flex-direction: column; align-items: stretch; }
+  }
+</style>

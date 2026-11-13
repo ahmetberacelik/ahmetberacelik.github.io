@@ -1,0 +1,154 @@
+---
+import type { SiteData } from '../data/types';
+import { getHomePath, type Locale } from '../utils/i18n';
+
+interface Props {
+  lang: Locale;
+  nav: SiteData['nav'];
+  alternatePath: string;
+  inHero?: boolean;
+}
+
+const { lang, nav, alternatePath, inHero = false } = Astro.props;
+const homePath = getHomePath(lang);
+const navItems = [
+  nav.items.about,
+  nav.items.projects,
+  nav.items.leadership,
+  nav.items.contact,
+];
+---
+
+<header class:list={['site-header', 'g', { 'is-standalone': !inHero }]}>
+  <div class="inner header-inner">
+    <a href={homePath} class="mark">{ 'Ahmet Bera Çelik' }</a>
+    <div class="nav-right">
+      <nav aria-label={nav.ariaLabel}>
+        <ul class="lbl">
+          {
+            navItems.map((item) => (
+              <li>
+                <a href={`${homePath}#${item.sectionId}`}>{item.label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <a
+        href={alternatePath}
+        class="sel lbl"
+        aria-label={nav.langSwitchAria}
+        hreflang={lang === 'en' ? 'tr' : 'en'}
+      >
+        {nav.langSwitchLabel}
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 2;
+    padding-block: 18px;
+  }
+
+  .site-header.is-standalone {
+    border-bottom: 1px solid var(--gunmetal);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    flex-wrap: wrap;
+  }
+
+  .mark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font: 700 13px/1 var(--sans);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--star);
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  nav ul {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--star);
+    text-decoration: none;
+  }
+
+  nav a:hover,
+  nav a:focus-visible {
+    color: var(--soft);
+  }
+
+  .sel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+    border: 1px solid var(--star);
+    border-radius: 4px;
+    padding: 0 14px;
+    text-decoration: none;
+    color: var(--star);
+    line-height: 1;
+  }
+
+  .sel:hover,
+  .sel:focus-visible {
+    background: rgba(240, 240, 250, 0.08);
+  }
+
+  @media (max-width: 720px) {
+    .site-header {
+      padding-block: 10px;
+    }
+
+    .nav-right {
+      display: contents;
+    }
+
+    nav {
+      order: 3;
+      width: 100%;
+      border-top: 1px solid var(--gunmetal);
+      padding-top: 2px;
+    }
+
+    nav ul {
+      justify-content: space-between;
+      gap: 4px;
+      flex-wrap: nowrap;
+    }
+
+    nav a {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      padding-inline: 2px;
+    }
+  }
+</style>

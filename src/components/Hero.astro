@@ -1,0 +1,190 @@
+---
+import { Image } from 'astro:assets';
+import Header from './Header.astro';
+import type { SiteData } from '../data/types';
+import type { Locale } from '../utils/i18n';
+import { defaultOgImage } from '../utils/media';
+
+interface Props {
+  lang: Locale;
+  hero: SiteData['hero'];
+  nav: SiteData['nav'];
+  alternatePath: string;
+}
+
+const { lang, hero, nav, alternatePath } = Astro.props;
+---
+
+<section class="hero" aria-label={hero.sectionAriaLabel}>
+  <Image
+    src={defaultOgImage}
+    alt={hero.photoAlt}
+    widths={[1200, 1600, 2000]}
+    sizes="(max-width: 1200px) 1200px, 100vw"
+    loading="eager"
+    fetchpriority="high"
+    class="hero-bg"
+  />
+  <Header
+    lang={lang}
+    nav={nav}
+    alternatePath={alternatePath}
+    inHero={true}
+  />
+  <div class="intro g">
+    <div class="inner">
+      <h1>{hero.name}</h1>
+    </div>
+    <div class="inner intro-footer">
+      <div class="intro-row">
+        <div class="intro-headings">
+          <span class="lbl eyebrow">{hero.eyebrow}</span>
+          <p class="role">{hero.roleLine}</p>
+        </div>
+        <p class="intro-copy">{hero.intro}</p>
+        <div class="btns">
+          <a class="btn" href={hero.primaryBtn.href}>{hero.primaryBtn.label}</a>
+          <a class="btn quiet" href={hero.secondaryBtn.href}>{hero.secondaryBtn.label}</a>
+        </div>
+      </div>
+      <span class="lbl dim credit">{hero.photoCredit}</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    min-height: clamp(680px, 68vw, 900px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero :global(img.hero-bg) {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 34%;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        ellipse 56% 58% at 18% 82%,
+        rgba(0, 0, 0, 0.9) 0%,
+        rgba(0, 0, 0, 0.68) 52%,
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.76) 0%,
+        rgba(0, 0, 0, 0.34) 20%,
+        rgba(0, 0, 0, 0.06) 40%,
+        rgba(0, 0, 0, 0.1) 62%,
+        rgba(0, 0, 0, 0.56) 82%,
+        #000000 100%
+      );
+  }
+
+  .intro {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-block: 4px 40px;
+  }
+
+  .intro .inner {
+    width: 100%;
+  }
+
+  .intro h1 {
+    font-size: clamp(40px, 9.2vw, 128px);
+    line-height: 0.92;
+  }
+
+  .intro-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px 48px;
+    flex-wrap: wrap;
+    padding-top: 180px;
+  }
+
+  .intro-row {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+  }
+
+  .eyebrow {
+    color: var(--soft);
+    display: block;
+  }
+
+  .role {
+    font: 700 clamp(26px, 3vw, 38px) / 1.05 var(--cond);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 6px 0 0;
+    color: var(--star);
+  }
+
+  .intro-copy {
+    margin: 0 0 6px;
+    font-size: clamp(16.5px, 1.3vw, 18.5px);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    color: var(--star);
+    max-width: 54ch;
+  }
+
+  .credit {
+    display: block;
+    color: var(--dim);
+  }
+
+  @media (max-width: 880px) {
+    .hero {
+      min-height: 760px;
+    }
+
+    .hero :global(img.hero-bg) {
+      object-position: 48% 28%;
+    }
+
+    .hero::before {
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.8) 0%,
+        rgba(0, 0, 0, 0.32) 22%,
+        rgba(0, 0, 0, 0.08) 38%,
+        rgba(0, 0, 0, 0.72) 56%,
+        rgba(0, 0, 0, 0.92) 74%,
+        #000000 100%
+      );
+    }
+
+    .intro {
+      padding-block: 6px 28px;
+    }
+
+    .intro-footer {
+      padding-top: 210px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+  }
+</style>

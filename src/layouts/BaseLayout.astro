@@ -1,0 +1,98 @@
+---
+import '@fontsource/barlow/latin-400.css';
+import '@fontsource/barlow/latin-ext-400.css';
+import '@fontsource/barlow/latin-500.css';
+import '@fontsource/barlow/latin-ext-500.css';
+import '@fontsource/barlow/latin-700.css';
+import '@fontsource/barlow/latin-ext-700.css';
+import '@fontsource/barlow-condensed/latin-700.css';
+import '@fontsource/barlow-condensed/latin-ext-700.css';
+import '../styles/global.css';
+
+import barlow400Woff2 from '@fontsource/barlow/files/barlow-latin-400-normal.woff2?url';
+import barlowCondensed700Woff2 from '@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2?url';
+import { defaultOgImage } from '../utils/media';
+import { getHomePath, getProjectPath, type Locale } from '../utils/i18n';
+
+interface Props {
+  lang: Locale;
+  title: string;
+  description: string;
+  projectSlug?: string;
+  ogImage?: string;
+}
+
+const { lang, title, description, projectSlug, ogImage } = Astro.props;
+
+const siteOrigin = Astro.site ?? new URL('https://example.com');
+const enPath = projectSlug ? getProjectPath('en', projectSlug) : getHomePath('en');
+const trPath = projectSlug ? getProjectPath('tr', projectSlug) : getHomePath('tr');
+const currentPath = lang === 'en' ? enPath : trPath;
+
+const canonicalUrl = new URL(currentPath, siteOrigin).toString();
+const enUrl = new URL(enPath, siteOrigin).toString();
+const trUrl = new URL(trPath, siteOrigin).toString();
+const ogImageUrl = new URL(ogImage ?? defaultOgImage.src, siteOrigin).toString();
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="tr" href={trUrl} />
+    <link rel="alternate" hreflang="x-default" href={enUrl} />
+
+    <link
+      rel="preload"
+      href={barlow400Woff2}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={barlowCondensed700Woff2}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'tr_TR'} />
+    <meta
+      property="og:locale:alternate"
+      content={lang === 'en' ? 'tr_TR' : 'en_US'}
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+  </head>
+  <body>
+    <slot />
+    <script is:inline>
+      (function () {
+        if (
+          window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+          document.querySelectorAll('video').forEach(function (v) {
+            v.removeAttribute('autoplay');
+            v.pause();
+            v.controls = true;
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

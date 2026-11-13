@@ -1,0 +1,132 @@
+---
+import type { SiteData } from '../data/types';
+
+interface Props {
+  contact: SiteData['contact'];
+}
+
+const { contact } = Astro.props;
+---
+
+<section class="section g contact-section" id={contact.id} aria-labelledby="h-contact">
+  <div class="inner contact-grid">
+    <div class="contact-left">
+      <h2 id="h-contact" class="contact-head">{contact.heading}</h2>
+    </div>
+    <div class="contact-right">
+      <p class="contact-p">{contact.sentence}</p>
+      <div class="contact-btns">
+        {
+          contact.buttons.map((btn) => (
+            <a
+              class="contact-btn"
+              href={btn.href}
+              download={btn.download ? '' : undefined}
+              target={btn.external ? '_blank' : undefined}
+              rel={btn.external ? 'noopener noreferrer' : undefined}
+            >
+              {btn.label}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact-section {
+    padding-block: clamp(80px, 9vw, 136px);
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--grid-gap);
+    align-items: start;
+  }
+
+  .contact-left {
+    grid-column: span 4;
+  }
+
+  .contact-head {
+    font: 700 clamp(36px, 4.6vw, 64px)/0.96 var(--cond);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--star);
+  }
+
+  .contact-right {
+    grid-column: 5 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 2.5vw, 28px);
+  }
+
+  .contact-p {
+    margin: 0;
+    color: var(--soft);
+    font-size: clamp(16.5px, 1.25vw, 18.5px);
+    line-height: 1.65;
+    max-width: 60ch;
+  }
+
+  .contact-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 4px;
+  }
+
+  .contact-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    border: 1px solid var(--star);
+    border-radius: 4px;
+    padding: 14px 28px;
+    color: var(--star);
+    background: transparent;
+    text-decoration: none;
+    font: 700 13px/1 var(--sans);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .contact-btn:hover,
+  .contact-btn:focus-visible {
+    background: rgba(240, 240, 250, 0.08);
+  }
+
+  @media (max-width: 880px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .contact-left,
+    .contact-right {
+      grid-column: auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .contact-btns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .contact-btn {
+      width: 100%;
+      padding-inline: 14px;
+    }
+
+    .contact-btn:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

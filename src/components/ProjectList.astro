@@ -1,0 +1,310 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import type { SiteData } from '../data/types';
+import { getProjectPath, type Locale } from '../utils/i18n';
+import { getMediaImage } from '../utils/media';
+import OtherProjects from './OtherProjects.astro';
+
+interface Props {
+  lang: Locale;
+  section: SiteData['projectsSection'];
+  projects: CollectionEntry<'projects'>[];
+}
+
+const { lang, section, projects } = Astro.props;
+
+const sortedProjects = [...projects].sort((a, b) => a.data.order - b.data.order);
+const featuredProjects = sortedProjects.filter((p) => p.data.featured);
+
+function getPoster(videoSrc: string): string {
+  return videoSrc.replace(/\.mp4$/, '-poster.jpg');
+}
+---
+
+<section class="section g" id={section.id} aria-labelledby="h-projects">
+  <div class="inner">
+    <div class="sec-head">
+      <h2 id="h-projects">{section.heading}</h2>
+    </div>
+
+    <div class="featured-list">
+      {
+        featuredProjects.map((project, idx) => {
+          const detailHref = getProjectPath(lang, project.data.projectSlug);
+          const primaryMedia = project.data.media[0];
+          const secondaryMedia = project.data.media.slice(1, 3);
+          const isLifeline = project.data.projectSlug === 'lifeline';
+          return (
+            <article class="feat-item">
+              <div class="feat-info">
+                <div class="feat-meta">
+                  <span class="lbl dim tabular">
+                    0{idx + 1} · {project.data.year}
+                  </span>
+                  <span class="lbl dim">{project.data.meta}</span>
+                </div>
+                <h3 class="feat-title-wrap">
+                  <a href={detailHref} class="feat-title">
+                    {project.data.title}
+                  </a>
+                </h3>
+                <p class="feat-tagline">{project.data.tagline}</p>
+                <p class="feat-summary">{project.data.summary}</p>
+                <div class="tags">
+                  {project.data.tags.map((tag) => (
+                    <span>{tag}</span>
+                  ))}
+                </div>
+                <div class="btns feat-actions">
+                  <a href={detailHref} class="btn">
+                    {section.viewDetailLabel} →
+                  </a>
+                  {project.data.repos.map((repo) => (
+                    <a
+                      href={repo.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="btn quiet"
+                    >
+                      {repo.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <div class="feat-visual">
+                {primaryMedia ? (
+                  <div class="feat-media-group">
+                    <figure class:list={['feat-figure', { 'is-circuit': isLifeline }]}>
+                      {primaryMedia.type === 'video' ? (
+                        <video
+                          src={primaryMedia.src}
+                          poster={getPoster(primaryMedia.src)}
+                          muted
+                          loop
+                          playsinline
+                          autoplay
+                          preload="metadata"
+                          aria-label={primaryMedia.alt}
+                        />
+                      ) : (
+                        <Image
+                          src={getMediaImage(primaryMedia.src)}
+                          alt={primaryMedia.alt}
+                          widths={[800, 1100, 1400]}
+                          sizes="(max-width: 960px) 120vw, 920px"
+                          loading="lazy"
+                        />
+                      )}
+                      <figcaption>
+                        <span class="lbl">{primaryMedia.captionTitle}</span>
+                        {primaryMedia.captionSub && (
+                          <span class="lbl sub-cap">{primaryMedia.captionSub}</span>
+                        )}
+                      </figcaption>
+                    </figure>
+
+                    {secondaryMedia.length > 0 && (
+                      <div class="feat-subgrid">
+                        {secondaryMedia.map((m) => (
+                          <figure class="feat-figure is-sub">
+                            {m.type === 'video' ? (
+                              <video
+                                src={m.src}
+                                poster={getPoster(m.src)}
+                                muted
+                                loop
+                                playsinline
+                                autoplay
+                                preload="metadata"
+                                aria-label={m.alt}
+                              />
+                            ) : (
+                              <Image
+                                src={getMediaImage(m.src)}
+                                alt={m.alt}
+                                widths={[480, 800, 1200]}
+                                sizes="(max-width: 960px) 100vw, 480px"
+                                loading="lazy"
+                              />
+                            )}
+                            <figcaption>
+                              <span class="lbl">{m.captionTitle}</span>
+                              {m.captionSub && (
+                                <span class="lbl sub-cap">{m.captionSub}</span>
+                              )}
+                            </figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  project.data.facts.length > 0 && (
+                    <div class="spec-panel">
+                      <div class="spec-header">
+                        <span class="lbl dim tabular">
+                          {project.data.title} · {project.data.year}
+                        </span>
+                        <span class="lbl">{project.data.tagline}</span>
+                      </div>
+                      <dl class="spec-grid">
+                        {project.data.facts.map((fact) => (
+                          <div class="spec-cell">
+                            <dt class="lbl dim">{fact.label}</dt>
+                            <dd class="spec-val">{fact.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )
+                )}
+              </div>
+            </article>
+          );
+        })
+      }
+    </div>
+
+    <OtherProjects section={section} projects={projects} />
+  </div>
+</section>
+
+<style>
+  .featured-list { border-top: 1px solid var(--gunmetal); }
+  .feat-item {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--grid-gap);
+    padding-block: clamp(44px, 5.5vw, 72px);
+    border-bottom: 1px solid var(--gunmetal);
+    align-items: start;
+  }
+  .feat-info {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  .feat-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+  .feat-title-wrap { margin: 0; font-size: clamp(32px, 3.8vw, 48px); line-height: 0.98; }
+  .feat-title { color: var(--star); text-decoration: none; }
+  .feat-title:hover { color: var(--soft); }
+  .feat-tagline {
+    margin: 0;
+    font: 600 clamp(18px, 1.5vw, 21px)/1.35 var(--sans);
+    color: var(--star);
+  }
+  .feat-summary {
+    margin: 0;
+    color: var(--soft);
+    font-size: clamp(16.5px, 1.25vw, 18.5px);
+    line-height: 1.65;
+    max-width: 62ch;
+  }
+  .feat-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .feat-actions .btn:not(.quiet) {
+    padding: 10px 16px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .feat-actions .btn.quiet {
+    padding: 10px 12px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .feat-visual {
+    grid-column: 5 / -1;
+    min-width: 0;
+  }
+  .feat-media-group { display: flex; flex-direction: column; gap: 14px; }
+  .feat-subgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .feat-figure, .inline-media {
+    margin: 0;
+    position: relative;
+    border: 1px solid var(--gunmetal);
+    background: var(--void);
+    overflow: hidden;
+  }
+  .feat-figure video, .feat-figure :global(img) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    object-fit: cover;
+  }
+  .feat-figure.is-sub video, .feat-figure.is-sub :global(img) {
+    aspect-ratio: 16 / 10;
+    object-position: 50% 62%;
+  }
+  .feat-figure.is-circuit {
+    aspect-ratio: 4 / 3;
+  }
+  .feat-figure.is-circuit :global(img) {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    transform: none;
+  }
+  .feat-figure figcaption, .inline-media figcaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 28px 14px 12px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.88));
+  }
+  .feat-figure figcaption .lbl, .inline-media figcaption .lbl { display: block; color: var(--star); }
+  .sub-cap { margin-top: 3px; color: var(--soft); }
+
+  .spec-panel {
+    border: 1px solid var(--gunmetal);
+    background: var(--void);
+  }
+  .spec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--gunmetal);
+  }
+  .spec-grid {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .spec-cell {
+    padding: 24px;
+    border-bottom: 1px solid var(--gunmetal);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .spec-cell:nth-child(odd) { border-right: 1px solid var(--gunmetal); }
+  .spec-cell:nth-last-child(-n + 2) { border-bottom: none; }
+  .spec-val {
+    margin: 0;
+    font: 700 clamp(22px, 2.1vw, 28px)/1.12 var(--cond);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--star);
+  }
+
+  @media (max-width: 960px) {
+    .feat-item { grid-template-columns: 1fr; gap: 24px; }
+    .feat-info, .feat-visual { grid-column: auto; }
+    .feat-subgrid, .spec-grid { grid-template-columns: 1fr; }
+    .spec-cell:nth-child(odd) { border-right: none; }
+    .spec-cell:nth-last-child(2) { border-bottom: 1px solid var(--gunmetal); }
+  }
+</style>

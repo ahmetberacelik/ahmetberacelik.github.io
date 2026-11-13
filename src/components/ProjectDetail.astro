@@ -1,0 +1,315 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import type { SiteData } from '../data/types';
+import { getHomePath, type Locale } from '../utils/i18n';
+import { getMediaImage } from '../utils/media';
+import ProjectNav from './ProjectNav.astro';
+
+interface Props {
+  lang: Locale;
+  project: CollectionEntry<'projects'>;
+  siteData: SiteData;
+  prevProject?: CollectionEntry<'projects'> | null;
+  nextProject?: CollectionEntry<'projects'> | null;
+}
+
+const { lang, project, siteData, prevProject, nextProject } = Astro.props;
+const { Content } = await project.render();
+
+function resolveImage(src: string) {
+  const filename = src.includes('/') ? (src.split('/').pop() ?? src) : src;
+  return getMediaImage(filename);
+}
+
+function parseTechItem(raw: string) {
+  const colonIdx = raw.indexOf(':');
+  if (colonIdx > 0 && colonIdx < 40) {
+    const label = raw.slice(0, colonIdx).replace(/^\*\*|\*\*$/g, '').trim();
+    const rest = raw.slice(colonIdx + 1).trim();
+    const text = rest.charAt(0).toLocaleUpperCase(lang) + rest.slice(1);
+    return { label, text };
+  }
+  return { label: '', text: raw };
+}
+
+const isLifeline = project.data.projectSlug === 'lifeline';
+const isSingleCircuit = isLifeline && project.data.media.length === 1;
+const homePath = getHomePath(lang);
+---
+
+<main id="main-content" class="project-detail g">
+  <div class="inner">
+    <div class:list={['detail-head', { 'no-facts': project.data.facts.length === 0 }]}>
+      <div class="lead">
+        <a href={`${homePath}#${siteData.projectsSection.id}`} class="back-link lbl dim">
+          ← {siteData.projectsSection.backToProjectsLabel}
+        </a>
+        <div class="meta-row">
+          <span class="lbl dim tabular">
+            {siteData.projectsSection.projectIndexPrefix} 0{project.data.order} · {project.data.year}
+          </span>
+          <span class="lbl dim">{project.data.meta}</span>
+        </div>
+        <h1 class="detail-title">{project.data.title}</h1>
+        <p class="tagline">{project.data.tagline}</p>
+        <p class="summary">{project.data.summary}</p>
+        <div class="tags">
+          {project.data.tags.map((t) => <span>{t}</span>)}
+        </div>
+        {project.data.repos.length > 0 && (
+          <div class="btns">
+            {project.data.repos.map((r) => (
+              <a class="btn quiet" href={r.url} target="_blank" rel="noopener noreferrer">{r.label}</a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {project.data.facts.length > 0 && (
+        <div class="facts-panel">
+          <dl class="facts-grid">
+            {project.data.facts.map((fact) => (
+              <div class="fact-cell">
+                <dt class="lbl dim">{fact.label}</dt>
+                <dd class="fact-val">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+    </div>
+
+    {project.data.media.length > 0 && (
+      <div class:list={['media-container', {
+        'circuit-wide': isSingleCircuit,
+        'media-grid-5': project.data.media.length === 5,
+      }]}>
+        {project.data.media.map((item) => (
+          <figure class:list={['media-item', item.type === 'video' ? 'media-video' : 'media-photo', { 'is-circuit-img': isSingleCircuit }]}>
+            {item.type === 'video' ? (
+              <video src={item.src} muted loop playsinline autoplay preload="metadata" aria-label={item.alt} />
+            ) : (
+              <Image
+                src={resolveImage(item.src)}
+                alt={item.alt}
+                widths={isSingleCircuit ? [640, 960, 1400, 1867] : [440, 640, 880]}
+                sizes={isSingleCircuit ? '(max-width: 880px) 100vw, 1320px' : '(max-width: 880px) 100vw, 440px'}
+                loading="lazy"
+              />
+            )}
+            <figcaption>
+              <span class="lbl">{item.captionTitle}</span>
+              {item.captionSub && <span class="lbl sub-cap">{item.captionSub}</span>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )}
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {project.data.technicalDetails.length > 0 && (
+      <details class="tech-details">
+        <summary class="lbl">{project.data.technicalDetailsTitle}</summary>
+        <div class="tech-grid">
+          {project.data.technicalDetails.map((item) => {
+            const { label, text } = parseTechItem(item);
+            return (
+              <div class="tech-cell">
+                {label && <span class="lbl dim tech-lbl">{label}</span>}
+                <p class="tech-text">{text}</p>
+              </div>
+            );
+          })}
+        </div>
+      </details>
+    )}
+
+    <ProjectNav
+      lang={lang}
+      siteData={siteData}
+      homePath={homePath}
+      prevProject={prevProject}
+      nextProject={nextProject}
+    />
+  </div>
+</main>
+
+<style>
+  .project-detail { padding-block: clamp(48px, 6vw, 84px); }
+  .detail-head {
+    display: grid;
+    grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr);
+    gap: 36px clamp(40px, 5vw, 72px);
+    align-items: start;
+  }
+  .detail-head.no-facts { grid-template-columns: 1fr; max-width: 780px; }
+  .lead { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .back-link { display: inline-flex; align-items: center; text-decoration: none; width: fit-content; }
+  .back-link:hover { color: var(--star); }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+  .detail-title {
+    font: 700 clamp(36px, 5vw, 68px)/0.96 var(--cond);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--star);
+  }
+  .tagline { margin: 0; font: 600 clamp(18px, 1.6vw, 22px)/1.3 var(--sans); color: var(--star); }
+  .summary { margin: 0; color: var(--soft); font-size: clamp(16.5px, 1.25vw, 18.5px); line-height: 1.65; max-width: 62ch; }
+  .facts-panel { border: 1px solid var(--gunmetal); background: var(--void); }
+  .facts-grid { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fact-cell { padding: clamp(18px, 2vw, 24px); border-bottom: 1px solid var(--gunmetal); display: flex; flex-direction: column; gap: 6px; }
+  .fact-cell:nth-child(odd) { border-right: 1px solid var(--gunmetal); }
+  .fact-cell:nth-last-child(-n + 2) { border-bottom: none; }
+  .fact-val { margin: 0; font-size: clamp(16.5px, 1.2vw, 18px); font-weight: 600; color: var(--star); }
+  .media-container { margin-top: clamp(48px, 5.5vw, 76px); }
+
+  /* LifeLine circuit photo: full board in landscape 4:3, no cropping */
+  .circuit-wide .media-item {
+    width: 100%;
+    border: 1px solid var(--gunmetal);
+    background: var(--void);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4 / 3;
+  }
+  .circuit-wide .media-item :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+  }
+
+  .media-grid-5 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .media-grid-5 .media-video { grid-column: span 3; }
+  .media-grid-5 .media-photo { grid-column: span 2; }
+  .media-grid-5 .media-photo :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+  }
+
+  .media-item { margin: 0; position: relative; background: var(--void); border: 1px solid var(--gunmetal); overflow: hidden; }
+  .media-video video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--void); }
+
+  .media-container figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 28px 14px 10px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.88));
+  }
+  .media-container figcaption .lbl { display: block; color: var(--star); }
+  .sub-cap { margin-top: 2px; color: var(--soft); }
+
+  /* 2-column prose on desktop */
+  .prose {
+    margin-top: clamp(56px, 6.5vw, 88px);
+    border-top: 1px solid var(--gunmetal);
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0 var(--grid-gap);
+  }
+  .prose :global(h2) {
+    grid-column: span 4;
+    font: 700 clamp(24px, 2.5vw, 32px)/1.15 var(--cond);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--star);
+    margin: 0;
+    padding-top: 36px;
+    border-top: 1px solid var(--gunmetal);
+  }
+  .prose :global(h2:first-of-type) { border-top: none; padding-top: 40px; }
+  .prose :global(ul) {
+    grid-column: 5 / -1;
+    margin: 0;
+    padding-top: 36px;
+    padding-bottom: 40px;
+    padding-left: 20px;
+    border-top: 1px solid var(--gunmetal);
+    color: var(--soft);
+    font-size: clamp(16.5px, 1.25vw, 18.5px);
+    line-height: 1.65;
+    max-width: 68ch;
+  }
+  .prose :global(ul:first-of-type) { border-top: none; padding-top: 40px; }
+  .prose :global(li) { margin-bottom: 14px; line-height: 1.65; }
+  .prose :global(li:last-child) { margin-bottom: 0; }
+  .prose :global(li::marker) { color: var(--dim); }
+  .prose :global(strong) { color: var(--star); }
+
+  /* Technical details: 2-column grid of items across full content width */
+  .tech-details {
+    margin-top: clamp(48px, 5vw, 72px);
+    border: 1px solid var(--gunmetal);
+    background: transparent;
+  }
+  .tech-details summary {
+    cursor: pointer;
+    color: var(--star);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    min-height: 56px;
+    padding: 16px 24px;
+    font: 700 clamp(12px, 0.9vw, 13px)/1.35 var(--sans);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .tech-details summary::-webkit-details-marker { display: none; }
+  .tech-details summary::after { content: '+'; font-size: 20px; font-weight: 400; color: var(--dim); }
+  .tech-details[open] summary::after { content: '−'; }
+  .tech-details summary:hover { background: rgba(240, 240, 250, 0.05); }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 clamp(36px, 4.5vw, 64px);
+    padding: 8px clamp(20px, 2.5vw, 32px) clamp(24px, 3vw, 40px);
+    border-top: 1px solid var(--gunmetal);
+  }
+  .tech-cell {
+    padding-block: clamp(18px, 2.2vw, 26px);
+    border-top: 1px solid var(--gunmetal);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tech-lbl {
+    font: 700 clamp(12px, 0.9vw, 13px)/1.35 var(--sans);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .tech-text {
+    margin: 0;
+    color: var(--soft);
+    font-size: clamp(16px, 1.2vw, 17.5px);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 880px) {
+    .detail-head { grid-template-columns: 1fr; gap: 28px; }
+    .lead, .facts-panel { grid-column: auto; }
+    .media-grid-5 { grid-template-columns: 1fr; }
+    .media-grid-5 .media-video, .media-grid-5 .media-photo { grid-column: auto; }
+    .prose { display: flex; flex-direction: column; gap: 20px; }
+    .prose :global(h2) { grid-column: auto; border-top: 1px solid var(--gunmetal); padding-top: 24px; margin-top: 8px; }
+    .prose :global(h2:first-of-type) { border-top: none; padding-top: 0; margin-top: 0; }
+    .prose :global(ul) { grid-column: auto; border-top: none; padding-top: 0; padding-bottom: 12px; padding-left: 20px; }
+    .tech-grid { grid-template-columns: 1fr; padding-inline: 18px; }
+  }
+  @media (max-width: 520px) {
+    .facts-grid { grid-template-columns: 1fr; }
+    .fact-cell:nth-child(odd) { border-right: none; }
+    .fact-cell:nth-last-child(2) { border-bottom: 1px solid var(--gunmetal); }
+  }
+</style>

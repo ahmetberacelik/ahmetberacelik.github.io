@@ -1,0 +1,85 @@
+---
+import type { SiteData } from '../data/types';
+
+interface Props {
+  footer: SiteData['footer'];
+}
+
+const { footer } = Astro.props;
+---
+
+<footer class="site-footer g">
+  <div class="inner footer-inner">
+    <span class="copy lbl dim tabular">{footer.copyright}</span>
+    <nav class="links lbl" aria-label="Footer navigation">
+      {
+        footer.links.map((link) => (
+          <a
+            href={link.href}
+            target={link.external ? '_blank' : undefined}
+            rel={link.external ? 'noopener noreferrer' : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--gunmetal);
+    padding-block: 36px 48px;
+  }
+
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px 32px;
+    flex-wrap: wrap;
+  }
+
+  .copy {
+    color: var(--dim);
+  }
+
+  .links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .links a {
+    color: var(--soft);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .links a:hover,
+  .links a:focus-visible {
+    color: var(--star);
+  }
+
+  @media (max-width: 640px) {
+    .site-footer {
+      padding-block: 28px 40px;
+    }
+
+    .footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .links {
+      width: 100%;
+      justify-content: flex-start;
+      gap: 20px;
+    }
+  }
+</style>

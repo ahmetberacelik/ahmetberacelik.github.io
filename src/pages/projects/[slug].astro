@@ -1,0 +1,60 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Contact from '../../components/Contact.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import ProjectDetail from '../../components/ProjectDetail.astro';
+import { getSiteData } from '../../data';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAlternatePath } from '../../utils/i18n';
+
+export async function getStaticPaths() {
+  const featuredProjects = (
+    await getCollection(
+      'projects',
+      ({ data }) => data.lang === 'en' && data.featured === true
+    )
+  ).sort((a, b) => a.data.order - b.data.order);
+
+  return featuredProjects.map((project, idx) => ({
+    params: { slug: project.data.projectSlug },
+    props: {
+      project,
+      prevProject: idx > 0 ? featuredProjects[idx - 1] : null,
+      nextProject: idx < featuredProjects.length - 1 ? featuredProjects[idx + 1] : null,
+    },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  prevProject?: CollectionEntry<'projects'> | null;
+  nextProject?: CollectionEntry<'projects'> | null;
+}
+
+const { project, prevProject, nextProject } = Astro.props;
+const siteData = getSiteData('en');
+---
+
+<BaseLayout
+  lang="en"
+  title={`${project.data.title} · Ahmet Bera Çelik`}
+  description={project.data.summary}
+  projectSlug={project.data.projectSlug}
+>
+  <Header
+    lang="en"
+    nav={siteData.nav}
+    alternatePath={getAlternatePath('en', project.data.projectSlug)}
+    inHero={false}
+  />
+  <ProjectDetail
+    lang="en"
+    project={project}
+    siteData={siteData}
+    prevProject={prevProject}
+    nextProject={nextProject}
+  />
+  <Contact contact={siteData.contact} />
+  <Footer footer={siteData.footer} />
+</BaseLayout>

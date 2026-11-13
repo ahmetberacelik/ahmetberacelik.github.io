@@ -1,0 +1,41 @@
+---
+import { getCollection } from 'astro:content';
+import About from '../components/About.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import Leadership from '../components/Leadership.astro';
+import ProjectList from '../components/ProjectList.astro';
+import { getSiteData } from '../data';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getAlternatePath } from '../utils/i18n';
+
+const siteData = getSiteData('en');
+const projects = (
+  await getCollection('projects', ({ data }) => data.lang === 'en')
+).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  lang="en"
+  title={siteData.meta.siteTitle}
+  description={siteData.meta.siteDescription}
+>
+  <main>
+    <Hero
+      lang="en"
+      hero={siteData.hero}
+      nav={siteData.nav}
+      alternatePath={getAlternatePath('en')}
+    />
+    <About about={siteData.about} />
+    <ProjectList
+      lang="en"
+      section={siteData.projectsSection}
+      projects={projects}
+    />
+    <Leadership lang="en" leadership={siteData.leadership} />
+    <Contact contact={siteData.contact} />
+  </main>
+  <Footer footer={siteData.footer} />
+</BaseLayout>

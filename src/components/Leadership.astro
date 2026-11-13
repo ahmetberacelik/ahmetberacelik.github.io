@@ -1,0 +1,317 @@
+---
+import { Image } from 'astro:assets';
+import type { SiteData } from '../data/types';
+import { getProjectPath, type Locale } from '../utils/i18n';
+import { getMediaImage } from '../utils/media';
+
+interface Props {
+  lang?: Locale;
+  leadership: SiteData['leadership'];
+}
+
+const { lang = 'en', leadership } = Astro.props;
+const zugaDetailHref = getProjectPath(lang, 'zuga-ida');
+const zugaLinkLabel = lang === 'tr' ? 'Proje ayrıntıları →' : 'Project details →';
+
+function splitRoleTitle(rawTitle: string) {
+  const parts = rawTitle.split(' · ');
+  if (parts.length > 1) {
+    return { name: parts[0], meta: parts.slice(1).join(' · ') };
+  }
+  return { name: rawTitle, meta: '' };
+}
+---
+
+<section class="section g" id={leadership.id} aria-labelledby="h-leadership">
+  <div class="inner">
+    <div class="sec-head">
+      <h2 id="h-leadership">{leadership.heading}</h2>
+    </div>
+
+    <div class="lead-roles">
+      {
+        leadership.roles.map((role) => {
+          const isZugaRole =
+            role.title.includes('ZUGA-İDA') ||
+            role.title.includes('Software Team Manager') ||
+            role.title.includes('Yazılım Ekibi Yöneticisi');
+          const { name: roleName, meta: roleMeta } = splitRoleTitle(role.title);
+
+          return (
+            <article class="lead-role">
+              <header class="role-head">
+                <div class="role-left-col">
+                  <h3 class="role-name">{roleName}</h3>
+                  {roleMeta && <span class="lbl dim tabular role-meta">{roleMeta}</span>}
+                  {role.subtitle && <span class="lbl dim role-sub">{role.subtitle}</span>}
+                </div>
+                <div class="role-right-col">
+                  <p class="role-p">{role.paragraph}</p>
+                  {role.links && role.links.length > 0 && (
+                    <div
+                      class="btns role-links"
+                      role="group"
+                      aria-label={lang === 'tr' ? 'Topluluk bağlantıları' : 'Community links'}
+                    >
+                      {role.links.map((link) => (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn quiet"
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  {isZugaRole && (
+                    <div class="role-action">
+                      <a href={zugaDetailHref} class="btn quiet">
+                        {zugaLinkLabel}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </header>
+
+              {role.events && role.events.length > 0 && (
+                <div class="events-list">
+                  {role.events.map((event) => {
+                    const photoCount = event.photos ? event.photos.length : 0;
+                    return (
+                      <div class="event-item">
+                        <div class="event-header-row">
+                          <div class="event-title-col">
+                            <h4 class="event-title">{event.title}</h4>
+                          </div>
+                          <div class="event-desc-col">
+                            <p class="event-desc">{event.description}</p>
+                          </div>
+                        </div>
+
+                        {photoCount > 0 && (
+                          <div class:list={['event-strip', { 'strip-1': photoCount === 1, 'strip-2': photoCount === 2, 'strip-3': photoCount >= 3, 'strip-natural': event.naturalStrip }]}>
+                            {event.photos.map((photo) => {
+                              const meta = getMediaImage(photo.src);
+                              const ratio = (meta.width / meta.height).toFixed(3);
+                              return (
+                              <figure class="event-figure" style={event.naturalStrip ? `flex: ${ratio} 1 0; --r: ${ratio}` : undefined}>
+                                <Image
+                                  src={meta}
+                                  alt={photo.alt}
+                                  widths={[540, 840, 1280]}
+                                  sizes="(max-width: 880px) 100vw, 840px"
+                                  loading="lazy"
+                                />
+                                <figcaption><span class="lbl">{photo.caption}</span></figcaption>
+                              </figure>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </article>
+          );
+        })
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .lead-roles {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--gunmetal);
+  }
+
+  .lead-role {
+    padding-block: clamp(48px, 5.5vw, 76px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(36px, 4vw, 56px);
+  }
+
+  .lead-role + .lead-role {
+    border-top: 1px solid var(--gunmetal);
+  }
+
+  /* Role heading block: 4 cols left, 8 cols right */
+  .role-head {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--grid-gap);
+    align-items: start;
+  }
+
+  .role-left-col {
+    grid-column: span 4;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .role-name {
+    font: 700 clamp(32px, 3.8vw, 48px)/0.98 var(--cond);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--star);
+    margin: 0;
+  }
+
+  .role-meta, .role-sub { margin-top: 2px; }
+
+  .role-right-col {
+    grid-column: 5 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .role-p {
+    margin: 0;
+    color: var(--soft);
+    font-size: clamp(16.5px, 1.25vw, 18.5px);
+    line-height: 1.65;
+    max-width: 70ch;
+  }
+
+  .role-links, .role-action { margin-top: 4px; }
+
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--gunmetal);
+  }
+
+  /* Event layout: text on top (4 col title, 8 col desc), photos below */
+  .event-item {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(24px, 3vw, 36px);
+    padding-block: clamp(36px, 4.5vw, 60px);
+    border-bottom: 1px solid var(--gunmetal);
+  }
+
+  .event-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .event-header-row {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--grid-gap);
+    align-items: start;
+  }
+
+  .event-title-col {
+    grid-column: span 4;
+  }
+
+  .event-title {
+    font: 700 clamp(22px, 2.2vw, 28px)/1.15 var(--cond);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--star);
+    margin: 0;
+  }
+
+  .event-desc-col {
+    grid-column: 5 / -1;
+  }
+
+  .event-desc {
+    margin: 0;
+    color: var(--soft);
+    font-size: clamp(16.5px, 1.25vw, 18.5px);
+    line-height: 1.65;
+    max-width: 68ch;
+  }
+
+  /* Justified photo strip below: full container width, equal height in row */
+  .event-strip {
+    width: 100%;
+    display: flex;
+    gap: 14px;
+    height: clamp(320px, 28vw, 420px);
+  }
+
+  .event-strip.strip-1 {
+    height: clamp(380px, 32vw, 480px);
+  }
+
+  .strip-3 .event-figure:nth-child(1) { flex: 0.75 1 0; }
+  .strip-3 .event-figure:nth-child(2) { flex: 0.563 1 0; }
+  .strip-3 .event-figure:nth-child(3) { flex: 1.333 1 0; }
+
+  .strip-2 .event-figure:nth-child(1) { flex: 0.75 1 0; }
+  .strip-2 .event-figure:nth-child(2) { flex: 1.333 1 0; }
+  .strip-1 .event-figure { flex: 1 1 0; }
+
+  /* Natural strip: row height follows the photos' own ratios, nothing is cropped */
+  .event-strip.strip-natural { height: auto; }
+  .strip-natural .event-figure { height: auto; aspect-ratio: var(--r); }
+
+  .event-figure {
+    margin: 0;
+    position: relative;
+    border: 1px solid var(--gunmetal);
+    background: var(--void);
+    overflow: hidden;
+    height: 100%;
+    min-width: 0;
+  }
+  .event-figure :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .strip-1 .event-figure :global(img) { object-position: 50% 38%; }
+  .event-figure figcaption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 24px 14px 10px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.88));
+  }
+  .event-figure figcaption .lbl { display: block; color: var(--star); }
+
+  @media (max-width: 880px) {
+    .role-head,
+    .event-header-row {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .role-left-col,
+    .role-right-col,
+    .event-title-col,
+    .event-desc-col {
+      grid-column: auto;
+    }
+    .event-strip {
+      flex-direction: column;
+      height: auto;
+      gap: 16px;
+    }
+    .event-figure {
+      width: 100%;
+      height: auto;
+      flex: none !important;
+      aspect-ratio: auto !important;
+    }
+    .event-figure :global(img) {
+      width: 100%;
+      height: auto;
+      aspect-ratio: auto;
+      object-fit: contain;
+    }
+  }
+</style>
